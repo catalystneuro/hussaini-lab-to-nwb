@@ -3,8 +3,6 @@ from nwb_conversion_tools import (
     AxonaRawSortingExtractorInterface
 )
 
-from .expodatainterface import ExpoDataInterface
-
 
 class HussainiRawNWBConverter(NWBConverter):
     data_interface_classes = dict(
