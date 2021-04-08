@@ -5,7 +5,7 @@ from nwb_conversion_tools import (
 
 class HussainiNWBConverter(NWBConverter):
     data_interface_classes = dict(
-        AxonaExtractorInterface=AxonaRecordingExtractorInterface
+        AxonaRecordingExtractorInterface=AxonaRecordingExtractorInterface
     )
 
 
