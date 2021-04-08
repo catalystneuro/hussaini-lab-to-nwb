@@ -1,13 +1,11 @@
 from nwb_conversion_tools import (
-    NWBConverter, AxonaRawRecordingExtractorInterface,
-    AxonaRawSortingExtractorInterface
+    NWBConverter, AxonaRecordingExtractorInterface
 )
 
 
-class HussainiRawNWBConverter(NWBConverter):
+class HussainiNWBConverter(NWBConverter):
     data_interface_classes = dict(
-        AxonaRawExtractorInterface=AxonaRawRecordingExtractorInterface, 
-        AxonaRawSortingExtractorInterface=AxonaRawSortingExtractorInterface
+        AxonaExtractorInterface=AxonaRecordingExtractorInterface
     )
 
 
