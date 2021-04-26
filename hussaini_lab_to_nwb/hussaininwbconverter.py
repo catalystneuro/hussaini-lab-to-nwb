@@ -7,7 +7,3 @@ class HussainiNWBConverter(NWBConverter):
     data_interface_classes = dict(
         AxonaRecordingExtractorInterface=AxonaRecordingExtractorInterface
     )
-
-
-# eof
-
