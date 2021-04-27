@@ -1,3 +1,3 @@
 from .hussaininwbconverter import (
-    HussainiRawNWBConverter
+    HussainiNWBConverter
 )
