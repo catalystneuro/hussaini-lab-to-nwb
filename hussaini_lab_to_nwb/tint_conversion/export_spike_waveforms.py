@@ -145,87 +145,91 @@ def get_waveforms(recording, sorting, unit_ids, header):
     return waveforms
 
 
-def write_tetrode(filepath, data, Fs):
+def write_tetrode_file_header(tetrode_file, n_spikes_chan, Fs):
+    ''' Generate and write header of tetrode file
 
-    session_path, session_filename = os.path.split(filepath)
-    tint_basename = os.path.splitext(session_filename)[0]
-    set_filename = os.path.join(session_path, '%s.set' % tint_basename)
+    Parameters
+    ----------
+    tetrode_file : str or Path
+        Full filename to write to
+    n_spikes_chan : int
+        Number of spikes to write to file
+    Fs : int
+        Sampling frequency of data
+    '''
+    path = Path(tetrode_file).parent
+    filename = Path(tetrode_file).name
+    basename = filename.split('.')[0]
+    set_file = path / '{}.set'.format(basename)
 
-    n = len(data)
+    # We are enforcing the defaults from the file format manual
+    header = get_set_header(set_file)
+    to_write = [
+        header,
+        'num_chans 4\n',
+        'timebase {} hz\n'.format(96000),
+        'bytes_per_timestamp {}\n'.format(4),
+        'samples_per_spike {}\n'.format(50),
+        'sample_rate {} hz\n'.format(Fs),
+        'bytes_per_sample {}\n'.format(1),
+        'spike_format t,ch1,t,ch2,t,ch3,t,ch4\n',
+        'num_spikes {}\n'.format(n_spikes_chan),
+        'data_start'
+    ]
 
-    header = get_set_header(set_filename)
+    with open(tetrode_file, 'w') as f:
+        f.writelines(to_write)
 
-    with open(filepath, 'w') as f:
-        num_chans = 'num_chans 4'
-        timebase_head = '\ntimebase %d hz' % (96000)
-        bp_timestamp = '\nbytes_per_timestamp %d' % (4)
-        samps_per_spike = '\nsamples_per_spike %d' % (50)
-        sample_rate = '\nsample_rate %d hz' % (Fs)
-        b_p_sample = '\nbytes_per_sample %d' % (1)
-        spike_form = '\nspike_format t,ch1,t,ch2,t,ch3,t,ch4'
-        num_spikes = '\nnum_spikes %d' % (n)
-        start = '\ndata_start'
 
-        write_order = [header, num_chans, timebase_head, bp_timestamp,
-                       samps_per_spike, sample_rate, b_p_sample, spike_form, num_spikes, start]
+def write_tetrode_file_data(tetrode_file, waveform_dict):
+    ''' Write binary data to tetrode file
 
-        f.writelines(write_order)
+    Parameters
+    ----------
+    tetrode_file : str or Path
+        Full filename of tetrode file to write to
+    waveform_dict : dict
+        Keys are spike timestamps, values are corresponding waveforms (np.memmap).
+        Timestamps are int64, waveforms are int8
+    '''
 
-    # rearranging the data to have a flat array of t1, waveform1, t2, waveform2,...
-    spike_times = np.asarray(sorted(data.keys()))
-
-    # the spike times are repeated for each channel
+    # created ordered spike times and waveforms from input dict
+    spike_times = np.asarray(sorted(waveform_dict.keys()))
     spike_times = np.tile(spike_times, (4, 1))
     spike_times = spike_times.flatten(order='F')
 
-    spike_values = np.asarray([value for (key, value) in sorted(data.items())])
+    n_spikes = spike_times.shape[0]
+    spike_values = np.asarray([value for (key, value) in sorted(waveform_dict.items())])
+    spike_values = spike_values.reshape((n_spikes, 50))
 
-    # this will create a (n_samples, n_channels, n_samples_per_spike) => (n, 4, 50) sized matrix,
-    # create a matrix of all the samples and channels going from ch1 -> ch4 for each spike time
-    # time1 ch1_data
-    # time1 ch2_data
-    # time1 ch3_data
-    # time1 ch4_data
-    # time2 ch1_data
-    # time2 ch2_data
-    # .
-    # .
-    # .
+    t_packed = struct.pack('>%di' % n_spikes, *spike_times)
+    spike_data_pack = struct.pack('<%db' % (n_spikes * 50), *spike_values.flatten())
 
-    spike_values = spike_values.reshape((n * 4, 50))  # create the 4nx50 channel data matrix
-
-    # make the first column the time values
-    spike_array = np.hstack((spike_times.reshape(len(spike_times), 1), spike_values))
-
-    data = None
-    spike_times = None
-    spike_values = None
-
-    spike_n = spike_array.shape[0]
-
-    t_packed = struct.pack('>%di' % spike_n, *spike_array[:, 0].astype(int))
-    spike_array = spike_array[:, 1:]  # removing time data from this matrix to save memory
-
-    spike_data_pack = struct.pack('<%db' % (spike_n * 50), *spike_array.astype(int).flatten())
-
-    spike_array = None
-
-    # now we need to combine the lists by alternating
-    comb_list = [None] * (2 * spike_n)
+    # combine timestamps (4 bytes per sample) and waveforms (1 byte per sample)
+    comb_list = [None] * (2 * n_spikes)
     comb_list[::2] = [t_packed[i:i + 4] for i in range(0, len(t_packed), 4)]
     comb_list[1::2] = [spike_data_pack[i:i + 50] for i in range(0, len(spike_data_pack), 50)]
 
-    t_packed = None
-    spike_data_pack = None
+    with open(tetrode_file, 'ab') as f:
+        f.writelines(comb_list)
+        f.writelines([bytes('\r\ndata_end\r\n', 'utf-8')])
 
-    write_order = []
-    with open(filepath, 'rb+') as f:
 
-        write_order.extend(comb_list)
-        write_order.append(bytes('\r\ndata_end\r\n', 'utf-8'))
+def write_tetrode(tetrode_file, waveform_dict, Fs):
+    ''' Write data to tetrode (`.X`) file
 
-        f.seek(0, 2)
-        f.writelines(write_order)
+    Parameters
+    ----------
+    tetrode_file : str or Path
+        Full filename of tetrode file to write to
+    waveform_dict : dict
+        Keys are spike timestamps, values are corresponding waveforms (np.memmap).
+        Timestamps are int64, waveforms are int8
+    Fs : int
+        Sampling frequency of data
+    '''
+    write_tetrode_file_header(tetrode_file, len(waveform_dict), Fs)
+    write_tetrode_file_data(tetrode_file, waveform_dict)
 
 
 def write_to_tetrode_files(recording, sorting, group_ids, set_file):
