@@ -72,22 +72,22 @@ def write_to_cut_file(cut_filename, unit_labels):
     write_list = []
 
     tab = '    '
-    empty_space = '               '
+    spaces = '               '
 
-    write_list.append('n_clusters: %d\n' % (n_clusters))
+    write_list.append('n_clusters: {}\n'.format(n_clusters))
     write_list.append('n_channels: 4\n')
     write_list.append('n_params: 2\n')
-    write_list.append('times_used_in_Vt:%s' % ((tab + '0') * 4 + '\n'))
+    write_list.append('times_used_in_Vt:{}'.format((tab + '0') * 4 + '\n'))
 
-    zero_string = (tab + '0') * 8 + '\n'
+    zero_line = (tab + '0') * 8 + '\n'
 
     for cell_i in np.arange(n_clusters):
-        write_list.append(' cluster: %d center:%s' % (cell_i, zero_string))
-        write_list.append('%smin:%s' % (empty_space, zero_string))
-        write_list.append('%smax:%s' % (empty_space, zero_string))
-    write_list.append('\nExact_cut_for: %s spikes: %d\n' % (basename, n_spikes))
+        write_list.append(' cluster: {} center:{}'.format(cell_i, zero_line))
+        write_list.append('{}min:{}'.format(spaces, zero_line))
+        write_list.append('{}max:{}'.format(spaces, zero_line))
+    write_list.append('\nExact_cut_for: {} spikes: {}\n'.format(basename, n_spikes))
 
-    # The unit label array consists of 25 values per row in .cut file
+    # 25 unit labels per row
     n_rows = int(np.floor(n_spikes / 25))
     remaining = int(n_spikes - n_rows * 25)
 
@@ -121,8 +121,8 @@ def write_to_clu_file(clu_filename, unit_labels):
     unit_labels = np.asarray(unit_labels).astype(int)
     unit_labels += 1
 
-    n_clust = len(np.unique(unit_labels))
-    unit_labels = np.concatenate(([n_clust], unit_labels))
+    n_clu = len(np.unique(unit_labels))
+    unit_labels = np.concatenate(([n_clu], unit_labels))
 
     np.savetxt(clu_filename, unit_labels, fmt='%d', delimiter='\n')
 
@@ -153,9 +153,6 @@ def write_unit_labels_to_file(sorting_extractor, filename):
         to a given tetrode file. For example, for tetrode `my_file.1`, the
         corresponding cut_filename should be `my_file_1.cut`. This will be
         set automatically given the base-filename or set file.
-
-    TODO: Any reason one might want to only convert some tetrodes or some
-    samples? Should those be parameters?
     '''
     tetrode_ids = sorting_extractor.get_units_property(property_name='group')
     tetrode_ids = np.array(tetrode_ids)

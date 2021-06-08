@@ -32,13 +32,27 @@ def parse_generic_header(filename):
     return header
 
 
-def get_set_header(set_filename):
-    with open(set_filename, 'r+') as f:
-        header = ''
+def get_set_header(set_file):
+    """
+    Given a .set filename, extract the first few lines up until and
+    including the line with `sw_version`.
+
+    Parameters
+    ----------
+    set_file : str or Path
+        Full filename of .set file
+
+    ---
+    Largely based on gebaSpike implementation by Geoff Barrett
+    https://github.com/GeoffBarrett/gebaSpike
+    """
+    header = ''
+    with open(set_file, 'r+') as f:
         for line in f:
             header += line
             if 'sw_version' in line:
                 break
+
     return header
 
 
