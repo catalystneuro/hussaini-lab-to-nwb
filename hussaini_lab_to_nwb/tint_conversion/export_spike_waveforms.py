@@ -181,7 +181,7 @@ def write_tetrode_file_header(tetrode_file, n_spikes_chan, Fs):
         f.writelines(to_write)
 
 
-def write_tetrode_file_data(tetrode_file, waveform_dict):
+def write_tetrode_file_data(tetrode_file, waveform_dict, Fs):
     ''' Write binary data to tetrode file
 
     Parameters
@@ -191,9 +191,11 @@ def write_tetrode_file_data(tetrode_file, waveform_dict):
     waveform_dict : dict
         Keys are spike timestamps, values are corresponding waveforms (np.memmap).
         Timestamps are int64, waveforms are int8
+    Fs : int
+        Sampling frequency of data
     '''
 
-    # created ordered spike times and waveforms from input dict
+    # create ordered spike times and waveforms from input dict
     spike_times = np.asarray(sorted(waveform_dict.keys()))
     spike_times = np.tile(spike_times, (4, 1))
     spike_times = spike_times.flatten(order='F')
@@ -201,6 +203,9 @@ def write_tetrode_file_data(tetrode_file, waveform_dict):
     n_spikes = spike_times.shape[0]
     spike_values = np.asarray([value for (key, value) in sorted(waveform_dict.items())])
     spike_values = spike_values.reshape((n_spikes, 50))
+
+    # re-adjust spike_times to reflect 96000 hz sampling rate
+    spike_times *= 96000 // Fs
 
     t_packed = struct.pack('>%di' % n_spikes, *spike_times)
     spike_data_pack = struct.pack('<%db' % (n_spikes * 50), *spike_values.flatten())
@@ -229,7 +234,7 @@ def write_tetrode(tetrode_file, waveform_dict, Fs):
         Sampling frequency of data
     '''
     write_tetrode_file_header(tetrode_file, len(waveform_dict), Fs)
-    write_tetrode_file_data(tetrode_file, waveform_dict)
+    write_tetrode_file_data(tetrode_file, waveform_dict, Fs)
 
 
 def write_to_tetrode_files(recording, sorting, group_ids, set_file):
