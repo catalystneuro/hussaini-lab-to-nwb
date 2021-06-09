@@ -261,12 +261,11 @@ def write_to_tetrode_files(recording, sorting, group_ids, set_file):
         group_waveforms = get_waveforms(recording, sorting, group_unit_ids, header)
         group_spike_samples = sorting.get_units_spike_train(unit_ids=group_unit_ids)
 
-        # Assign each waveform to it's spike sample in a dictionary
+        # assign each waveform to it's spike sample in a dictionary
         spike_waveform_dict = combine_units_on_tetrode(group_spike_samples, group_waveforms)
 
-        # Set tetrode filename
         tetrode_filename = str(set_file).split('.')[0] + '.{}'.format(group_id + 1)
         print('Writing', Path(tetrode_filename).name)
 
-        # Use `BinConverter` function to write to tetrode file
+        # write to tetrode file
         write_tetrode(tetrode_filename, spike_waveform_dict, sampling_rate)
