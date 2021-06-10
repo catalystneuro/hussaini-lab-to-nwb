@@ -2,6 +2,7 @@ from .tint_conversion import (
     write_to_tetrode_files, write_unit_labels_to_file,
     compare_spike_samples_between_recordings
 )
+from spikeextractors.extractors.axonaunitrecordingextractor import AxonaUnitRecordingExtractor
 
 
 class TintConverter():
@@ -17,6 +18,14 @@ class TintConverter():
     spike times are determined by the spike-sorting output in the given sorting
     extractor object.
 
+    It might be desirable to not overwrite existing `.X` files. In that case
+    it is recommended to copy the `.set` file to a new folder, since converted
+    recordings are saved in the same folder (and with the same file basename)
+    as the given `.set` file.
+
+    This approach has the added advantage that it is possible to directly compare
+    the timestamps of the old tetrode `.X` files and the new ones (see example 3).
+
     # Example1:
     tc = TintConveter(recording=my_recording_extractor,
                       sorting=my_sorting_extractor,
@@ -28,6 +37,16 @@ class TintConverter():
     tc.write_to_tint(recording=my_recording_extractor,
                      sorting=my_sorting_extractor,
                      set_file='my/set/file/path/setfilename.set')
+
+    # Example3:
+    tc = TintConveter()
+    tc.write_to_tint(recording=my_recording_extractor,
+                     sorting=my_sorting_extractor,
+                     set_file='my/output_data/set/file/path/setfilename.set')
+    tc.compare_timestamps_after_conversion(
+        filename_old='my/set/file/path/setfilename.set',
+        filename_new='my/output_data/set/file/path/setfilename.set'
+    )
     '''
 
     def __init__(self, recording=None, sorting=None, set_file=None):
@@ -58,10 +77,16 @@ class TintConverter():
         '''
         if (recording is None) and (self.recording is not None):
             recording = self.recording
+        else:
+            self.recording = recording
         if (sorting is None) and (self.sorting is not None):
             sorting = self.sorting
+        else:
+            self.sorting = sorting
         if (set_file is None) and (self.set_file is not None):
             set_file = self.set_file
+        else:
+            self.set_file = set_file
 
         # writes to .X files for each tetrode
         group_ids = recording.get_channel_groups()
@@ -70,8 +95,7 @@ class TintConverter():
         # writes to .cut and .clu files for each tetrode
         write_unit_labels_to_file(sorting, set_file)
 
-
-    def compare_timestamps_after_X_conversion(filename_old, filename_new):
+    def compare_timestamps_after_conversion(self, filename_old, filename_new):
         ''' Given two AxonaUnitRecordingExtractor objects, one based on .X files
         created from the raw recording using a thresholding method, and one created
         from the .X files using a spike sorting algorithm, compute comparison metrics
@@ -79,23 +103,16 @@ class TintConverter():
 
         Parameters
         ----------
-        rec1, rec2 : AxonaUnitRecordingExtractor
-            The recording extractor used for the tint conversion and the recording
-            extractor from reading the converted data back in.
-        sorting : SortingExtractor or None, default=None (optional)
-            The sorting extractor used for the tint conversion. When not provided
-            there is no information about how many units were deteced per tetrode.
+        filename_old, filename_new : str or Path
+            Old and new full filenames of pre- and post- conversion `.set` files.
 
         Returns
         -------
         df : pandas.DataFrame
-
-        Notes
-        -----
-        Wrapper for compare_spike_samples_between_recordings
         '''
-        rec1 = 
-        rec2 = 
-        df = compare_spike_samples_between_recordings(rec1, rec2, sorting=None)
+        rec1 = AxonaUnitRecordingExtractor(filename=filename_old, noise_std=0)
+        rec2 = AxonaUnitRecordingExtractor(filename=filename_new, noise_std=0)
+
+        df = compare_spike_samples_between_recordings(rec1, rec2, sorting=self.sorting)
 
         return df
