@@ -1,4 +1,7 @@
-from .tint_conversion import write_to_tetrode_files, write_unit_labels_to_file
+from .tint_conversion import (
+    write_to_tetrode_files, write_unit_labels_to_file,
+    compare_spike_samples_between_recordings
+)
 
 
 class TintConverter():
@@ -66,3 +69,33 @@ class TintConverter():
 
         # writes to .cut and .clu files for each tetrode
         write_unit_labels_to_file(sorting, set_file)
+
+
+    def compare_timestamps_after_X_conversion(filename_old, filename_new):
+        ''' Given two AxonaUnitRecordingExtractor objects, one based on .X files
+        created from the raw recording using a thresholding method, and one created
+        from the .X files using a spike sorting algorithm, compute comparison metrics
+        of how well spike times correspond for each tetrode.
+
+        Parameters
+        ----------
+        rec1, rec2 : AxonaUnitRecordingExtractor
+            The recording extractor used for the tint conversion and the recording
+            extractor from reading the converted data back in.
+        sorting : SortingExtractor or None, default=None (optional)
+            The sorting extractor used for the tint conversion. When not provided
+            there is no information about how many units were deteced per tetrode.
+
+        Returns
+        -------
+        df : pandas.DataFrame
+
+        Notes
+        -----
+        Wrapper for compare_spike_samples_between_recordings
+        '''
+        rec1 = 
+        rec2 = 
+        df = compare_spike_samples_between_recordings(rec1, rec2, sorting=None)
+
+        return df
