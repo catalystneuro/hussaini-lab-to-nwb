@@ -3,6 +3,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .utils import get_group_property_name
+
 
 def convert_spike_train_to_label_array(spike_train):
     '''Takes a list of arrays, where each array is a series of
@@ -154,7 +156,8 @@ def write_unit_labels_to_file(sorting_extractor, filename):
         corresponding cut_filename should be `my_file_1.cut`. This will be
         set automatically given the base-filename or set file.
     '''
-    tetrode_ids = sorting_extractor.get_units_property(property_name='group')
+    group_property_name = get_group_property_name(sorting_extractor)
+    tetrode_ids = sorting_extractor.get_units_property(property_name=group_property_name)
     tetrode_ids = np.array(tetrode_ids)
 
     unit_ids = np.array(sorting_extractor.get_unit_ids())

@@ -1,8 +1,10 @@
+from spikeextractors.extractors.axonaunitrecordingextractor import AxonaUnitRecordingExtractor
+
 from .tint_conversion import (
     write_to_tetrode_files, write_unit_labels_to_file,
     compare_spike_samples_between_recordings
 )
-from spikeextractors.extractors.axonaunitrecordingextractor import AxonaUnitRecordingExtractor
+from .tint_conversion.utils import assert_group_names_match
 
 
 class TintConverter():
@@ -87,6 +89,8 @@ class TintConverter():
             set_file = self.set_file
         else:
             self.set_file = set_file
+
+        assert_group_names_match(self.sorting, self.recording)
 
         # writes to .X files for each tetrode
         group_ids = recording.get_channel_groups()

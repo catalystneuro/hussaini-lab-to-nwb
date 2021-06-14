@@ -1,11 +1,11 @@
 import os
 import struct
 from pathlib import Path
-import warnings
 
 import numpy as np
-
 import spiketoolkit as st
+
+from .utils import get_group_property_name, assert_group_names_match
 
 
 def parse_generic_header(filename):
@@ -69,23 +69,9 @@ def get_unit_group_ids(sorting):
     group_ids : List
         List of groups ids for each Unit in `sorting`.
     '''
+    group_property_name = get_group_property_name(sorting)
+
     unit_ids = sorting.get_unit_ids()
-
-    # Guess property name that assigns units to tetrodes if possible
-    property_names = sorting.get_unit_property_names(unit_id=unit_ids[0])
-    group_property_name = None
-    if 'group' not in property_names:
-        for property_name in property_names:
-            if 'group' in property_name:
-                group_property_name = property_name
-                warnings.warn('''Using {} property to assign units to tetrode groups,
-                    because `groups` was not found'''.format(group_property_name))
-                break
-    else:
-        group_property_name = 'group'
-    if group_property_name is None:
-        raise Exception('There is no group property name that assigns units to a given tetrode.')
-
     group_ids = [sorting.get_unit_property(
         unit_id=unit_id, property_name=group_property_name) for unit_id in unit_ids
     ]
@@ -145,12 +131,14 @@ def get_waveforms(recording, sorting, unit_ids, header):
     ms_before = samples_before / (sampling_rate / 1000) + 0.001
     ms_after = samples_after / (sampling_rate / 1000) + 0.001
 
+    group_property_name = get_group_property_name(sorting)
+
     waveforms = st.postprocessing.get_unit_waveforms(
         recording,
         sorting,
         unit_ids=unit_ids,
         max_spikes_per_unit=None,
-        grouping_property='group',
+        grouping_property=group_property_name,
         recompute_info=True,
         ms_before=ms_before,
         ms_after=ms_after,
@@ -272,6 +260,9 @@ def write_to_tetrode_files(recording, sorting, group_ids, set_file):
         existing .X files in your .set file directory, copy the .set file to a new
         folder and give its new location. The new .X files will appear there.
     '''
+
+    assert_group_names_match(sorting, recording)
+
     sampling_rate = recording.get_sampling_frequency()
     group_ids = get_unit_group_ids(sorting)
     unit_ids = sorting.get_unit_ids()
