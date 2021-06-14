@@ -1,6 +1,7 @@
 import os
 import struct
 from pathlib import Path
+import warnings
 
 import numpy as np
 
@@ -69,8 +70,24 @@ def get_unit_group_ids(sorting):
         List of groups ids for each Unit in `sorting`.
     '''
     unit_ids = sorting.get_unit_ids()
+
+    # Guess property name that assigns units to tetrodes if possible
+    property_names = sorting.get_unit_property_names(unit_id=unit_ids[0])
+    group_property_name = None
+    if 'group' not in property_names:
+        for property_name in property_names:
+            if 'group' in property_name:
+                group_property_name = property_name
+                warnings.warn('''Using {} property to assign units to tetrode groups,
+                    because `groups` was not found'''.format(group_property_name))
+                break
+    else:
+        group_property_name = 'group'
+    if group_property_name is None:
+        raise Exception('There is no group property name that assigns units to a given tetrode.')
+
     group_ids = [sorting.get_unit_property(
-        unit_id=unit_id, property_name='group') for unit_id in unit_ids
+        unit_id=unit_id, property_name=group_property_name) for unit_id in unit_ids
     ]
 
     return group_ids
