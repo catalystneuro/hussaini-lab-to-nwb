@@ -274,12 +274,13 @@ def write_to_tetrode_files(recording, sorting, group_ids, set_file):
     '''
     sampling_rate = recording.get_sampling_frequency()
     group_ids = get_unit_group_ids(sorting)
+    unit_ids = sorting.get_unit_ids()
     header = parse_generic_header(set_file)
 
     for group_id in np.unique(group_ids):
 
         # get spike samples and waveforms of this group / tetrode
-        group_unit_ids = [i for i, gid in enumerate(group_ids) if gid == group_id]
+        group_unit_ids = [unit_ids[i] for i, gid in enumerate(group_ids) if gid == group_id]
         group_waveforms = get_waveforms(recording, sorting, group_unit_ids, header)
         group_spike_samples = sorting.get_units_spike_train(unit_ids=group_unit_ids)
 
