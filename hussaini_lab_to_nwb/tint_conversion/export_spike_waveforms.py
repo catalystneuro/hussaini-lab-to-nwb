@@ -210,7 +210,7 @@ def write_tetrode_file_data(tetrode_file, waveform_dict, Fs):
     spike_values = spike_values.reshape((n_spikes, 50))
 
     # re-adjust spike_times to reflect 96000 hz sampling rate
-    spike_times *= 96000 // Fs
+    spike_times *= 96000 // int(Fs)
 
     t_packed = struct.pack('>%di' % n_spikes, *spike_times)
     spike_data_pack = struct.pack('<%db' % (n_spikes * 50), *spike_values.flatten())
