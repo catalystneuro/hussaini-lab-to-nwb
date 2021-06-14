@@ -90,7 +90,7 @@ def get_unit_group_ids(sorting):
         unit_id=unit_id, property_name=group_property_name) for unit_id in unit_ids
     ]
 
-    return group_ids
+    return [int(group_id) for group_id in group_ids]
 
 
 def combine_units_on_tetrode(group_spike_samples, group_waveforms):
