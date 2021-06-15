@@ -22,6 +22,9 @@ def compare_spike_samples_between_recordings(rec1, rec2, sorting=None):
     -------
     df : pandas.DataFrame
     '''
+    assert (rec1.neo_reader.spike_channels_count() > 0) and (rec2.neo_reader.spike_channels_count() > 0), \
+        'No spikes found in at least one specified recording extractor. Maybe there are no `.X` files?'
+
     channel_groups = np.unique(rec1.get_channel_groups())
 
     if sorting:
