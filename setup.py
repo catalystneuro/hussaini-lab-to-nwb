@@ -15,7 +15,7 @@ setup(
     description='NWB conversion scripts and tutorials.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    author='Steffen Buergers and Ben Dichter',
+    author='Steffen Buergers, Julia Sprenger, Alessio Buccino and Ben Dichter',
     email='ben.dichter@gmail.com',
     url='https://github.com/catalystneuro/hussaini-lab-to-nwb',
     packages=find_packages(),
