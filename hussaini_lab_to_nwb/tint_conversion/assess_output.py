@@ -40,13 +40,16 @@ def compare_spike_samples_between_recordings(rec1, rec2, sorting=None):
         old_timestamps = deque(rec1.neo_reader.get_spike_timestamps(spike_channel_index=group_id) // 2)
         new_timestamps = deque(rec2.neo_reader.get_spike_timestamps(spike_channel_index=group_id) // 2)
 
+        num_spikes_old = len(old_timestamps)
+        num_spikes_new = len(new_timestamps)
+
         paired_spikes, noise_spikes = compare_spike_samples(old_timestamps, new_timestamps)
 
         metrics = compute_timestamp_comparison_metrics(paired_spikes)
         metrics['group_id'] = group_id
         metrics['num_units'] = num_units_per_group[group_id]
-        metrics['num_spikes_thresh'] = len(old_timestamps)
-        metrics['num_spikes_sort'] = len(new_timestamps)
+        metrics['num_spikes_thresh'] = num_spikes_old
+        metrics['num_spikes_sort'] = num_spikes_new
         metrics['num_spikes_in_noise'] = noise_spikes
 
         if i == 0:
