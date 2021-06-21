@@ -1,1 +1,23 @@
-nwb_conversion_tools
+pandas
+numpy
+h5py
+cython
+tqdm
+click
+pillow
+scipy
+matplotlib
+scikit-learn
+pyqt5
+klusta
+klustakwik2
+jupyter
+pyqtwebengine
+phy --pre --upgrade
+pynwb
+pyopenephys
+spikeextractors
+spiketoolkit
+spikewidgets
+spikesorters
+spikecomparison
