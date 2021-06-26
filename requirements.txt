@@ -9,11 +9,12 @@ scipy
 matplotlib
 scikit-learn
 pyqt5
+nose
 klusta
 klustakwik2
 jupyter
 pyqtwebengine
-phy --pre --upgrade
+phy
 pyintan
 pynwb
 pyopenephys
