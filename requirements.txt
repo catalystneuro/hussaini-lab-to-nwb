@@ -7,6 +7,7 @@ click
 pillow
 scipy
 matplotlib
+seaborn
 scikit-learn
 pyqt5
 nose
@@ -25,3 +26,6 @@ spikewidgets
 spikesorters
 spikecomparison
 ml_ms4alg
+openpyxl 
+numba
+tridesclous
