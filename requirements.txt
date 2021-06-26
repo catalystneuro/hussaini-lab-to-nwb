@@ -18,6 +18,7 @@ phy
 pyintan
 pynwb
 pyopenephys
+neo
 spikeextractors
 spiketoolkit
 spikewidgets
