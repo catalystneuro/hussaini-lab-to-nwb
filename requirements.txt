@@ -24,3 +24,4 @@ spiketoolkit
 spikewidgets
 spikesorters
 spikecomparison
+ml_ms4alg
