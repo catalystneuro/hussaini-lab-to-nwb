@@ -21,8 +21,5 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={'': ['*.yml', '*.json']},
-    install_requires=install_requires,
-    entry_points={
-        'console_scripts': ['nwbgui-hussaini=hussaini_lab_to_nwb.cmd_line:cmd_line_shortcut'],
-    }
+    install_requires=install_requires
 )
