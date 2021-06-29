@@ -16,10 +16,12 @@ klustakwik2
 jupyter
 pyqtwebengine
 phy
+psutil
 pyintan
 pynwb
 pyopenephys
 neo
+nwb_conversion_tools
 spikeextractors
 spiketoolkit
 spikewidgets
