@@ -20,9 +20,9 @@ psutil
 pyintan
 pynwb
 pyopenephys
-neo
 nwb_conversion_tools
-spikeextractors
+git+https://github.com/SpikeInterface/spikeextractors@118aa9d2acb395e76bcb40c80a9db6f28a054230#egg=spikeextractors
+git+https://github.com/NeuralEnsemble/python-neo.git@3d8b139bbf0bc3193bf576ee707575a43bf181c3#egg=neo
 spiketoolkit
 spikewidgets
 spikesorters
@@ -30,4 +30,6 @@ spikecomparison
 ml_ms4alg
 openpyxl 
 numba
+spyking-circus
 tridesclous
+opencv-python
