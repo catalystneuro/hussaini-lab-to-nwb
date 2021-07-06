@@ -1,0 +1,8 @@
+klusta
+klustakwik2
+ml_ms4alg
+openpyxl
+numba
+spyking-circus
+tridesclous
+opencv-python
