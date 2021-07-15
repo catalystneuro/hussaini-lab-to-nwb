@@ -46,11 +46,11 @@ def compare_spike_samples_between_recordings(rec1, rec2, sorting=None):
         paired_spikes, noise_spikes = compare_spike_samples(old_timestamps, new_timestamps)
 
         metrics = compute_timestamp_comparison_metrics(paired_spikes)
-        metrics['group_id'] = group_id
-        metrics['num_units'] = num_units_per_group[group_id]
-        metrics['num_spikes_thresh'] = num_spikes_old
-        metrics['num_spikes_sort'] = num_spikes_new
-        metrics['num_spikes_in_noise'] = noise_spikes
+        metrics['group_id'] = int(group_id)
+        metrics['num_units'] = int(num_units_per_group[group_id])
+        metrics['num_spikes_thresh'] = int(num_spikes_old)
+        metrics['num_spikes_sort'] = int(num_spikes_new)
+        metrics['num_spikes_in_noise'] = int(noise_spikes)
 
         if i == 0:
             df = pd.DataFrame(metrics)
@@ -135,8 +135,8 @@ def compute_timestamp_comparison_metrics(paired_spikes):
     mean_non_overlap = sum(abs_non_overlap) / len(non_overlap)
 
     return {
-        'num_signal_snippets_found_by_sorter': [len(non_overlap)],
-        'num_signal_snippets_with_multiple_spikes': [multiple_spikes],
+        'num_signal_snippets_found_by_sorter': [int(len(non_overlap))],
+        'num_signal_snippets_with_multiple_spikes': [int(multiple_spikes)],
         'mean_non_overlapping_samples': [mean_non_overlap],
         'stderr_non_overlapping_samples': [stderr_non_overlap]
     }
