@@ -24,4 +24,4 @@ spiketoolkit
 spikewidgets
 spikesorters
 spikecomparison
-
+nwbwidgets
