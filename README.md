@@ -24,12 +24,15 @@ It is expected that `Axona` data is read either from `.bin` + `.set` files (raw 
 Hence, when unit data is used, it can be useful to assess the mismatch between the original `.X` files and the exported `.X` files. This can be accomplished as follows:
 
 First, you need to copy the `.set` file into a new folder, where you want to create the exported `.X` files after spike sorting. Then, you can run:
-```
+
+```python
 # Export spike sorted data to TINT format
 tc = TintConveter()
-tc.write_to_tint(recording=my_recording_extractor,
-                 sorting=my_sorting_extractor,
-                 set_file='my/output_data/set/file/path/setfilename.set')
+tc.write_to_tint(
+  recording=my_recording_extractor,
+  sorting=my_sorting_extractor,
+  set_file='my/output_data/set/file/path/setfilename.set'
+)
                  
 # Assess mismatch between original `.X` files and `.X` files from spike sorting output
 tc.compare_timestamps_after_conversion(
