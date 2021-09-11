@@ -1,9 +1,10 @@
 from nwb_conversion_tools import (
-    NWBConverter,
     AxonaRecordingExtractorInterface,
     AxonaUnitRecordingExtractorInterface,
     AxonaPositionDataInterface,
-    AxonaLFPDataInterface
+    AxonaLFPDataInterface,
+    IntanRecordingInterface,
+    NWBConverter,
 )
 
 
@@ -20,4 +21,11 @@ class HussainiUnitNWBConverter(NWBConverter):
         AxonaUnitRecordingExtractorInterface=AxonaUnitRecordingExtractorInterface,
         AxonaPositionDataInterface=AxonaPositionDataInterface,
         AxonaLFPDataInterface=AxonaLFPDataInterface
+    )
+
+
+class HussainiIntanNWBConverter(NWBConverter):
+    data_interface_classes = dict(
+        IntanRecordingInterface=IntanRecordingInterface,
+        AxonaPositionDataInterface=AxonaPositionDataInterface
     )

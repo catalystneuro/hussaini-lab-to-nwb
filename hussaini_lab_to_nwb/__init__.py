@@ -1,5 +1,6 @@
 from .tintconverter import TintConverter
 from .hussaininwbconverter import (
     HussainiNWBConverter,
-    HussainiUnitNWBConverter
+    HussainiUnitNWBConverter,
+    HussainiIntanNWBConverter
 )
