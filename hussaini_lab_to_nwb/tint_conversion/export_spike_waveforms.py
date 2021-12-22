@@ -175,7 +175,7 @@ def write_tetrode_file_header(tetrode_file, n_spikes_chan, Fs):
         'timebase {} hz\n'.format(96000),
         'bytes_per_timestamp {}\n'.format(4),
         'samples_per_spike {}\n'.format(50),
-        'sample_rate {} hz\n'.format(Fs),
+        'sample_rate {} hz\n'.format(int(Fs)),
         'bytes_per_sample {}\n'.format(1),
         'spike_format t,ch1,t,ch2,t,ch3,t,ch4\n',
         'num_spikes {}\n'.format(n_spikes_chan),
