@@ -116,7 +116,7 @@ def get_waveforms(recording, sorting, unit_ids, header):
         ms_after=ms_after,
         return_idxs=False,
         return_scaled=False,
-        dtype=np.int8,
+        dtype=np.int8
     )
 
     return waveforms
