@@ -66,7 +66,6 @@ def write_to_cut_file(cut_filename, unit_labels):
     https://github.com/GeoffBarrett/gebaSpike
     '''
     basename = os.path.basename(os.path.splitext(cut_filename)[0])
-    unique_cells = np.unique(unit_labels)
 
     n_clusters = len(np.unique(unit_labels))
     n_spikes = len(unit_labels)

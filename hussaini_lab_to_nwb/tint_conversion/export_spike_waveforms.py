@@ -79,34 +79,6 @@ def get_unit_group_ids(sorting):
     return [int(group_id) for group_id in group_ids]
 
 
-def combine_units_on_tetrode(group_spike_samples, group_waveforms):
-    '''Write all waveforms of given tetrode in dictionary with the
-    corresponding spike samples being the keys (1 sample for each
-    waveform).
-
-    Parameters
-    ----------
-    group_spike_samples : list
-        As returned by sortingextractor.get_units_spike_train()
-    group_waveforms : list
-        As returned by spiketoolkit.postprocessing.get_unit_waveforms()
-
-    Returns
-    -------
-    tetrode_spikes : dict
-        Keys are spike samples, values are waveforms (ntrls x nch x nsamp)
-    '''
-    tetrode_spikes = {}
-
-    for i, (samples, waveforms) in enumerate(zip(group_spike_samples, group_waveforms)):
-
-        for sample, waveform in zip(samples, waveforms):
-
-            tetrode_spikes[sample] = waveform
-
-    return tetrode_spikes
-
-
 def get_waveforms(recording, sorting, unit_ids, header):
     '''Get waveforms for specific tetrode.
 
@@ -132,7 +104,7 @@ def get_waveforms(recording, sorting, unit_ids, header):
     ms_after = samples_after / (sampling_rate / 1000) + 0.001
 
     group_property_name = get_group_property_name(sorting)
-
+    
     waveforms = st.postprocessing.get_unit_waveforms(
         recording,
         sorting,
@@ -144,7 +116,7 @@ def get_waveforms(recording, sorting, unit_ids, header):
         ms_after=ms_after,
         return_idxs=False,
         return_scaled=False,
-        dtype=np.int8
+        dtype=np.int8,
     )
 
     return waveforms
@@ -166,7 +138,7 @@ def write_tetrode_file_header(tetrode_file, n_spikes_chan, Fs):
     filename = Path(tetrode_file).name
     basename = filename.split('.')[0]
     set_file = path / '{}.set'.format(basename)
-
+    
     # We are enforcing the defaults from the file format manual
     header = get_set_header(set_file)
     to_write = [
@@ -186,27 +158,28 @@ def write_tetrode_file_header(tetrode_file, n_spikes_chan, Fs):
         f.writelines(to_write)
 
 
-def write_tetrode_file_data(tetrode_file, waveform_dict, Fs):
+def write_tetrode_file_data(tetrode_file, all_spikes, all_waveforms, Fs):
     ''' Write binary data to tetrode file
 
     Parameters
     ----------
     tetrode_file : str or Path
         Full filename of tetrode file to write to
-    waveform_dict : dict
-        Keys are spike timestamps, values are corresponding waveforms (np.memmap).
-        Timestamps are int64, waveforms are int8
+    all_spikes : np.array
+        Array with all spike timestamps for tetrode (int64)
+    all_waveforms : np.array
+        Array with all corresponding waveforms (np.memmap) (int8)
     Fs : int
         Sampling frequency of data
     '''
 
     # create ordered spike times and waveforms from input dict
-    spike_times = np.asarray(sorted(waveform_dict.keys()))
+    spike_times = all_spikes
     spike_times = np.tile(spike_times, (4, 1))
     spike_times = spike_times.flatten(order='F')
 
     n_spikes = spike_times.shape[0]
-    spike_values = np.asarray([value for (key, value) in sorted(waveform_dict.items())])
+    spike_values = all_waveforms
     spike_values = spike_values.reshape((n_spikes, 50))
 
     # re-adjust spike_times to reflect 96000 hz sampling rate
@@ -225,21 +198,22 @@ def write_tetrode_file_data(tetrode_file, waveform_dict, Fs):
         f.writelines([bytes('\r\ndata_end\r\n', 'utf-8')])
 
 
-def write_tetrode(tetrode_file, waveform_dict, Fs):
+def write_tetrode(tetrode_file, all_spikes, all_waveforms, Fs):
     ''' Write data to tetrode (`.X`) file
 
     Parameters
     ----------
     tetrode_file : str or Path
         Full filename of tetrode file to write to
-    waveform_dict : dict
-        Keys are spike timestamps, values are corresponding waveforms (np.memmap).
-        Timestamps are int64, waveforms are int8
+    all_spikes : np.array
+        Array with all spike timestamps for tetrode (int64)
+    all_waveforms : np.array
+        Array with all corresponding waveforms (np.memmap) (int8)
     Fs : int
         Sampling frequency of data
     '''
-    write_tetrode_file_header(tetrode_file, len(waveform_dict), Fs)
-    write_tetrode_file_data(tetrode_file, waveform_dict, Fs)
+    write_tetrode_file_header(tetrode_file, len(all_spikes), Fs)
+    write_tetrode_file_data(tetrode_file, all_spikes, all_waveforms, Fs)
 
 
 def write_to_tetrode_files(recording, sorting, group_ids, set_file):
@@ -275,11 +249,12 @@ def write_to_tetrode_files(recording, sorting, group_ids, set_file):
         group_waveforms = get_waveforms(recording, sorting, group_unit_ids, header)
         group_spike_samples = sorting.get_units_spike_train(unit_ids=group_unit_ids)
 
-        # assign each waveform to it's spike sample in a dictionary
-        spike_waveform_dict = combine_units_on_tetrode(group_spike_samples, group_waveforms)
+        # concatenate all spikes and waveforms
+        all_spikes = np.concatenate(group_spike_samples)
+        all_waveforms = np.concatenate(group_waveforms)
 
         tetrode_filename = str(set_file).split('.')[0] + '.{}'.format(group_id + 1)
         print('Writing', Path(tetrode_filename).name)
 
         # write to tetrode file
-        write_tetrode(tetrode_filename, spike_waveform_dict, sampling_rate)
+        write_tetrode(tetrode_filename, all_spikes, all_waveforms, sampling_rate)
