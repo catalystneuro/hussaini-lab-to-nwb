@@ -79,7 +79,7 @@ def get_unit_group_ids(sorting):
     return [int(group_id) for group_id in group_ids]
 
 
-def get_waveforms(recording, sorting, unit_ids, header):
+def get_waveforms(recording, sorting, unit_ids, header, waveforms_center):
     '''Get waveforms for specific tetrode.
 
     Parameters
@@ -97,8 +97,10 @@ def get_waveforms(recording, sorting, unit_ids, header):
         List of np.array (n_spikes, n_channels, n_timepoints) with waveforms for each unit
     '''
     sampling_rate = recording.get_sampling_frequency()
-    samples_before = int(header['pretrigSamps'])
-    samples_after = int(header['spikeLockout'])
+    samples_before = int(50 * waveforms_center)
+    samples_after = 50 - samples_before
+    header['pretrigSamps'] = str(samples_before)
+    header['spikeLockout'] = str(samples_after)
 
     ms_before = samples_before / (sampling_rate / 1000) + 0.001
     ms_after = samples_after / (sampling_rate / 1000) + 0.001
@@ -216,7 +218,7 @@ def write_tetrode(tetrode_file, all_spikes, all_waveforms, Fs):
     write_tetrode_file_data(tetrode_file, all_spikes, all_waveforms, Fs)
 
 
-def write_to_tetrode_files(recording, sorting, group_ids, set_file):
+def write_to_tetrode_files(recording, sorting, group_ids, set_file, waveforms_center=0.5):
     '''Get spike samples and waveforms for all tetrodes specified in
     `group_ids`. Note that `group_ids` is 0-indexed, whereas tetrodes are
     1-indexed (so if you want tetrodes 1+2, specify group_ids=[0, 1]).
@@ -233,6 +235,8 @@ def write_to_tetrode_files(recording, sorting, group_ids, set_file):
         the same base filename as the .set file. So if you do not want to overwrite
         existing .X files in your .set file directory, copy the .set file to a new
         folder and give its new location. The new .X files will appear there.
+    waveforms_center: float
+            Controls the waveform peak location in the 1ms TINT cutout (e.g. 0.5: peak is at 0.5ms)
     '''
 
     assert_group_names_match(sorting, recording)
@@ -246,7 +250,8 @@ def write_to_tetrode_files(recording, sorting, group_ids, set_file):
 
         # get spike samples and waveforms of this group / tetrode
         group_unit_ids = [unit_ids[i] for i, gid in enumerate(group_ids) if gid == group_id]
-        group_waveforms = get_waveforms(recording, sorting, group_unit_ids, header)
+        group_waveforms = get_waveforms(
+            recording, sorting, group_unit_ids, header, waveforms_center)
         group_spike_samples = sorting.get_units_spike_train(unit_ids=group_unit_ids)
 
         # concatenate all spikes and waveforms
