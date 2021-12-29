@@ -120,7 +120,6 @@ def write_to_clu_file(clu_filename, unit_labels):
     https://github.com/GeoffBarrett/gebaSpike
     '''
     unit_labels = np.asarray(unit_labels).astype(int)
-    unit_labels += 1
 
     n_clu = len(np.unique(unit_labels))
     unit_labels = np.concatenate(([n_clu], unit_labels))
@@ -167,6 +166,7 @@ def write_unit_labels_to_file(sorting_extractor, filename):
 
         spike_train = sorting_extractor.get_units_spike_train(unit_ids=unit_ids[tetrode_ids == i])
         unit_labels = convert_spike_train_to_label_array(spike_train)
+        unit_labels += 1
 
         # We use Axona conventions for filenames (tetrodes are 1 indexed)
         cut_filename = set_cut_filename_from_basename(filename, i + 1)
