@@ -92,6 +92,8 @@ class TintConverter():
             set_file = self.set_file
         else:
             self.set_file = set_file
+        
+        assert 0 < waveforms_center < 1, "'waveforms_center' must be between 0 and 1 ms" 
 
         assert_group_names_match(self.sorting, self.recording)
 
