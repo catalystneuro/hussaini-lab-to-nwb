@@ -118,7 +118,7 @@ def get_waveforms(recording, sorting, unit_ids, header, waveforms_center):
         ms_after=ms_after,
         return_idxs=False,
         return_scaled=False,
-        dtype=np.int8
+        dtype=np.int16         
     )
 
     return waveforms
@@ -176,13 +176,14 @@ def write_tetrode_file_data(tetrode_file, all_spikes, all_waveforms, Fs):
     '''
 
     # create ordered spike times and waveforms from input dict
-    spike_times = all_spikes
+    spike_times = all_spikes                     # sort the spikes and use the same indexing to sort corresponding waveforms
     spike_times = np.tile(spike_times, (4, 1))
     spike_times = spike_times.flatten(order='F')
 
     n_spikes = spike_times.shape[0]
-    spike_values = all_waveforms
-    spike_values = spike_values.reshape((n_spikes, 50))
+    spike_values = all_waveforms #/ 2**4
+    spike_values = np.clip(all_waveforms, -128, 127)
+    spike_values = spike_values.reshape((n_spikes, 50)).astype(np.int8)
 
     # re-adjust spike_times to reflect 96000 hz sampling rate
     spike_times *= 96000 // int(Fs)
@@ -257,9 +258,12 @@ def write_to_tetrode_files(recording, sorting, group_ids, set_file, waveforms_ce
         # concatenate all spikes and waveforms
         all_spikes = np.concatenate(group_spike_samples)
         all_waveforms = np.concatenate(group_waveforms)
+        sorted_spike_idxs = np.argsort(all_spikes)
+        all_spikes_sorted = all_spikes[sorted_spike_idxs]
+        all_waveforms_sorted = all_waveforms[sorted_spike_idxs]
 
         tetrode_filename = str(set_file).split('.')[0] + '.{}'.format(group_id + 1)
         print('Writing', Path(tetrode_filename).name)
 
         # write to tetrode file
-        write_tetrode(tetrode_filename, all_spikes, all_waveforms, sampling_rate)
+        write_tetrode(tetrode_filename, all_spikes_sorted, all_waveforms_sorted, sampling_rate)
